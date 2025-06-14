@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mi Tracker de Hábitos Diarios</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .header h1 {
+        color: #2d3748;
+        font-size: 2.5em;
+        margin-bottom: 10px;
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .date-display {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 25px;
+        display: inline-block;
+        font-weight: bold;
+        margin-bottom: 20px;
+      }
+
+      .progress-section {
+        margin-bottom: 30px;
+        text-align: center;
+      }
+
+      .progress-circle {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: conic-gradient(#667eea 0deg, #764ba2 0deg, #e2e8f0 0deg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        position: relative;
+        transition: all 0.3s ease;
+      }
+
+      .progress-inner {
+        width: 90px;
+        height: 90px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5em;
+        font-weight: bold;
+        color: #2d3748;
+      }
+
+      .habits-grid {
+        display: grid;
+        gap: 15px;
+        margin-bottom: 30px;
+      }
+
+      .habit-item {
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 15px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .habit-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      }
+
+      .habit-item.completed {
+        background: linear-gradient(135deg, #48bb78, #38a169);
+        border-color: #38a169;
+        color: white;
+      }
+
+      .habit-item.completed::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        animation: shine 2s infinite;
+      }
+
+      @keyframes shine {
+        0% {
+          left: -100%;
+        }
+        100% {
+          left: 100%;
+        }
+      }
+
+      .habit-checkbox {
+        width: 24px;
+        height: 24px;
+        border: 2px solid #cbd5e0;
+        border-radius: 50%;
+        margin-right: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+      }
+
+      .habit-item.completed .habit-checkbox {
+        background: white;
+        border-color: white;
+      }
+
+      .checkmark {
+        color: #38a169;
+        font-size: 16px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .habit-item.completed .checkmark {
+        opacity: 1;
+      }
+
+      .habit-content {
+        flex: 1;
+      }
+
+      .habit-title {
+        font-weight: bold;
+        font-size: 1.1em;
+        margin-bottom: 3px;
+      }
+
+      .habit-description {
+        font-size: 0.9em;
+        opacity: 0.8;
+        margin-bottom: 3px;
+      }
+
+      .habit-time {
+        font-size: 0.8em;
+        font-weight: bold;
+        padding: 2px 8px;
+        background: rgba(102, 126, 234, 0.1);
+        border-radius: 10px;
+        display: inline-block;
+        color: #667eea;
+      }
+
+      .habit-item.completed .habit-time {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+      }
+
+      .habit-icon {
+        font-size: 2em;
+        margin-left: 15px;
+        opacity: 0.7;
+      }
+
+      .reset-btn {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 25px;
+        font-size: 1em;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: block;
+        margin: 20px auto 0;
+      }
+
+      .reset-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+      }
+
+      .motivation-quote {
+        text-align: center;
+        font-style: italic;
+        color: #4a5568;
+        margin-top: 20px;
+        padding: 15px;
+        background: rgba(102, 126, 234, 0.1);
+        border-radius: 10px;
+        border-left: 4px solid #667eea;
+      }
+
+      .category-header {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 10px;
+        margin: 20px 0 10px 0;
+        font-weight: bold;
+        text-align: center;
+      }
+
+      .resources-section {
+        margin-top: 30px;
+        padding: 20px;
+        background: rgba(102, 126, 234, 0.05);
+        border-radius: 15px;
+        border: 1px solid rgba(102, 126, 234, 0.2);
+      }
+
+      .resources-title {
+        font-size: 1.2em;
+        font-weight: bold;
+        color: #2d3748;
+        margin-bottom: 15px;
+        text-align: center;
+      }
+
+      .resource-category {
+        margin-bottom: 15px;
+      }
+
+      .resource-category h4 {
+        color: #667eea;
+        font-size: 1em;
+        margin-bottom: 5px;
+      }
+
+      .resource-list {
+        font-size: 0.9em;
+        color: #4a5568;
+        line-height: 1.5;
+      }
+
+      .time-schedule {
+        background: linear-gradient(45deg, #48bb78, #38a169);
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+
+      .schedule-title {
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+
+      .schedule-text {
+        font-size: 0.9em;
+        opacity: 0.9;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🚀 Mi Crecimiento Diario</h1>
+        <div class="date-display" id="currentDate"></div>
+      </div>
+
+      <div class="time-schedule">
+        <div class="schedule-title">
+          📅 Horario Base (Estudias 12:00 - 6:00 PM)
+        </div>
+        <div class="schedule-text">
+          Mañana: Desarrollo personal y ejercicio | Tarde: Estudios SENA |
+          Noche: Inglés y programación
+        </div>
+      </div>
+
+      <div class="progress-section">
+        <div class="progress-circle" id="progressCircle">
+          <div class="progress-inner" id="progressText">0%</div>
+        </div>
+        <p><strong>Progreso del día</strong></p>
+      </div>
+
+      <div class="habits-grid">
+        <!-- Rutina Matutina -->
+        <div class="category-header">🌅 Rutina Matutina (7:00 - 11:30 AM)</div>
+
+        <div class="habit-item" data-habit="wake-up">
+          <div class="habit-checkbox">
+            <span class="checkmark">✓</span>
+          </div>
+          <div class="habit-content">
+            <div class="habit-title">Despertar Temprano</div>
+            <div class="habit-description">
+              Levantarse sin posponer la alarma
+            </div>
+            <div class="habit-time">7:00 AM</div>
+          </div>
+          <div class="habit-icon">⏰</div>
+        </div>
+
+        <div class="habit-item" data-habit="water-morning">
+          <div class="habit-checkbox">
+            <span class="checkmark">✓</span>
+          </div>
+          <div class="habit-content">
+            <div class="habit-title">Hidratación Matutina</div>
+            <div class="habit-description">
+              Beber 1-2 vasos de agua al despertar
+            </div>
+            <div class="habit-time">7:00 AM</div>
+          </div>
+          <div class="habit-icon">💧</div>
+        </div>
+
+        <div class="habit-item" data-habit="exercise">
+          <div class="habit-checkbox">
+            <span class="checkmark">✓</span>
+          </div>
+          <div class="habit-content">
+            <div class="habit-title">Ejercicio</div>
+            <div class="habit-description">
+              30-45 min (gym, caminar, yoga, calistenia)
+            </div>
+            <div class="habit-time">8:00 - 8:45 AM</div>
+          </div>
+          <div class="habit-icon">🏃‍♂️</div>
+        </div>
+
+        <div class="habit-item" data-habit="meditation">
+          <div class="habit-checkbox">
+            <span class="checkmark">✓</span>
+          </div>
+          <div class="habit-content">
+            <div class="habit-title">Meditación/Mindfulness</div>
+            <div class="habit-description">
+              10 min de meditación o respiración consciente
+            </div>
+            <div class="habit-time">9:00 - 9:10 AM</div>
+          </div>
+          <div class="habit-icon">🧘‍♂️</div>
+        </div>
+
+        <div class="habit-item" data-habit="planning">
+          <div class="habit-checkbox">
+            <span class="checkmark">✓</span>
+          </div>
+          <div class="habit-content">
+            <div class="habit-title">Planificación del Día</div>
+            <div class="habit-description">
+              Revisar objetivos, organizar tareas y prioridades
+            </div>
+            <div class="habit-time">9:15 - 9:30 AM</div>
+          </div>
+          <div class="habit-icon">📋</div>
+        </div>
+
+        <div class="habit-item" data-habit="coding-morning">
+          <div class="habit-checkbox">
+            <span class="checkmark">✓</span>
+          </div>
+          <div class="habit-content">
+            <div class="habit-title">Práctica de Programación</div>
+            <div class="habit-description">
+              Algoritmos, proyectos personales, LeetCode
+            </div>
+            <div class="habit-time">9:30 - 10:30 AM</div>
+          </div>
+          <div class="habit-icon">⌨️</div>
+        </div>
+
+        <div class="habit-item" data-habit="tech-reading">
+          <div class="habit-checkbox">
+            <span class="checkmark">✓</span>
+          </div>
+          <div class="habit-content">
+            <div class="habit-title">Lectura Técnica</div>
+            <div class="habit-description">
+              Artículos, blogs tech, documentación
+            </div>
+            <div class="habit-time">10:30 - 11:00 AM</div>
+          </div>
+          <div class="habit-icon">📖</div>
+        </div>
+
+        <!-- Estudios SENA -->
+        <div class="category-header">🎓 Estudios SENA (12:00 - 6:00 PM)</div>
+
+        <div class="habit-item" data-habit="sena-attendance">
+          <div class="habit-checkbox">
+            <span class="checkmark">✓</span>
+          </div>
+          <div class="habit-content">
+            <div class="habit-title">Asistencia y Participación</div>
+            <div class="habit-description">
+              Estar presente y participar activamente en clases
+            </div>
+            <div class="habit-time">12:00 - 6:00 PM</div>
+          </div>
+          <div class="habit-icon">🏫</div>
+        </div>
+
+        <div class="habit-item" data-habit="sena-tasks">
+          <div class="habit-checkbox">
+            <span class="checkmark">✓</span>
+          </div>
+          <div class="habit-content">
+            <div class="habit-title">Tareas del SENA</div>
+            <div class="habit-description">
+              Completar actividades y proyectos asignados
+            </div>
+            <div class="habit-time">Durante clases</div>
+          </div>
+          <div class="habit-icon">📚</div>
+        </div>
+
+        <div class="habit-item" data-habit="sena-notes">
+          <div class="habit-checkbox">
+            <span class="checkmark">✓</span>
+          </div>
+          <div class="habit-content">
+            <div class="habit-title">Tomar Apuntes</div>
+            <div class="habit-description">
+              Registrar conceptos importantes y dudas
+            </div>
+            <div class="habit-time">Durante clases</div>
+          </div>
+          <div class="habit-icon">📝</div>
+        </div>
+
+        <!-- Rutina Nocturna -->
+        <div class="category-header">🌙 Rutina Nocturna (6:30 - 10:30 PM)</div>
+
+        <div class="habit-item" data-habit="english-duolingo">
+          <div class="habit-checkbox">
+            <span class="checkmark">✓</span>
+          </div>
+          <div class="habit-content">
+            <div class="habit-title">Duolingo</div>
+            <div class="habit-description">15-20 min de práctica diaria</div>
+            <div class="habit-time">7:00 - 7:20 PM</div>
+          </div>
+          <div class="habit-icon">🦉</div>
+        </div>
+
+        <div class="habit-item" data-habit="english-content">
+          <div class="habit-checkbox">
+            <span class="checkmark">✓</span>
+          </div>
+          <div class="habit-content">
+            <div class="habit-title">Contenido Técnico en Inglés</div>
+            <div class="habit-description">
+              YouTube: freeCodeCamp, Traversy Media, The Net Ninja
+            </div>
+            <div class="habit-time">7:30 - 8:30 PM</div>
+          </div>
+          <div class="habit-icon">🎥</div>
+        </div>
+
+        <div class="habit-item" data-habit="english-reading">
+          <div class="habit-checkbox">
+            <span class="checkmark">✓</span>
+          </div>
+          <div class="habit-content">
+            <div class="habit-title">Lectura en Inglés</div>
+            <div class="habit-description">
+              MDN Web Docs, Stack Overflow, blogs técnicos
+            </div>
+            <div class="habit-time">8:30 - 9:00 PM</div>
+          </div>
+          <div class="habit-icon">📄</div>
+        </div>
+
+        <div class="habit-item" data-habit="english-conversation">
+          <div class="habit-checkbox">
+            <span class="checkmark">✓</span>
+          </div>
+          <div class="habit-content">
+            <div class="habit-title">Práctica de Conversación</div>
+            <div class="habit-description">
+              HelloTalk, Tandem o grabarte hablando
+            </div>
+            <div class="habit-time">9:00 - 9:15 PM</div>
+          </div>
+          <div class="habit-icon">💬</div>
+        </div>
+
+        <div class="habit-item" data-habit="review-day">
+          <div class="habit-checkbox">
+            <span class="checkmark">✓</span>
+          </div>
+          <div class="habit-content">
+            <div class="habit-title">Revisión del Día</div>
+            <div class="habit-description">
+              Reflexionar sobre aprendizajes y mejoras
+            </div>
+            <div class="habit-time">9:30 - 9:40 PM</div>
+          </div>
+          <div class="habit-icon">🤔</div>
+        </div>
+
+        <div class="habit-item" data-habit="gratitude">
+          <div class="habit-checkbox">
+            <span class="checkmark">✓</span>
+          </div>
+          <div class="habit-content">
+            <div class="habit-title">Gratitud</div>
+            <div class="habit-description">
+              Escribir 3 cosas por las que estoy agradecido
+            </div>
+            <div class="habit-time">9:40 - 9:45 PM</div>
+          </div>
+          <div class="habit-icon">🙏</div>
+        </div>
+
+        <div class="habit-item" data-habit="sleep-prep">
+          <div class="habit-checkbox">
+            <span class="checkmark">✓</span>
+          </div>
+          <div class="habit-content">
+            <div class="habit-title">Preparación para Dormir</div>
+            <div class="habit-description">
+              Sin pantallas, rutina de relajación
+            </div>
+            <div class="habit-time">10:00 - 10:30 PM</div>
+          </div>
+          <div class="habit-icon">😴</div>
+        </div>
+
+        <!-- Hábitos Todo el Día -->
+        <div class="category-header">⏰ Durante Todo el Día</div>
+
+        <div class="habit-item" data-habit="water-daily">
+          <div class="habit-checkbox">
+            <span class="checkmark">✓</span>
+          </div>
+          <div class="habit-content">
+            <div class="habit-title">Hidratación Completa</div>
+            <div class="habit-description">
+              Beber al menos 2 litros de agua total
+            </div>
+            <div class="habit-time">Todo el día</div>
+          </div>
+          <div class="habit-icon">💧</div>
+        </div>
+
+        <div class="habit-item" data-habit="english-immersion">
+          <div class="habit-checkbox">
+            <span class="checkmark">✓</span>
+          </div>
+          <div class="habit-content">
+            <div class="habit-title">Inmersión en Inglés</div>
+            <div class="habit-description">
+              IDE en inglés, podcasts, música en inglés
+            </div>
+            <div class="habit-time">Todo el día</div>
+          </div>
+          <div class="habit-icon">🌍</div>
+        </div>
+
+        <div class="habit-item" data-habit="posture">
+          <div class="habit-checkbox">
+            <span class="checkmark">✓</span>
+          </div>
+          <div class="habit-content">
+            <div class="habit-title">Postura y Pausas</div>
+            <div class="habit-description">
+              Mantener buena postura, pausas cada hora
+            </div>
+            <div class="habit-time">Todo el día</div>
+          </div>
+          <div class="habit-icon">🪑</div>
+        </div>
+      </div>
+
+      <div class="resources-section">
+        <div class="resources-title">
+          📚 Recursos Gratuitos para tu Crecimiento
+        </div>
+
+        <div class="resource-category">
+          <h4>🌍 Apps de Inglés:</h4>
+          <div class="resource-list">
+            <strong>Duolingo</strong> - Vocabulario básico |
+            <strong>HelloTalk/Tandem</strong> - Intercambio con nativos |
+            <strong>BBC Learning English</strong> - Contenido estructurado |
+            <strong>Cambly</strong> - Conversación (versión limitada gratuita)
+          </div>
+        </div>
+
+        <div class="resource-category">
+          <h4>💻 Contenido Técnico en Inglés:</h4>
+          <div class="resource-list">
+            <strong>YouTube:</strong> freeCodeCamp, Traversy Media, The Net
+            Ninja, Programming with Mosh | <strong>Documentación:</strong> MDN
+            Web Docs, React Docs, Node.js Docs |
+            <strong>Comunidad:</strong> Stack Overflow, Dev.to, GitHub
+          </div>
+        </div>
+
+        <div class="resource-category">
+          <h4>🎧 Podcasts Técnicos:</h4>
+          <div class="resource-list">
+            <strong>Syntax</strong> - Desarrollo web |
+            <strong>CodeNewbie</strong> - Para principiantes |
+            <strong>Software Engineering Daily</strong> - Industria tech |
+            <strong>JavaScript Jabber</strong> - JS específico
+          </div>
+        </div>
+
+        <div class="resource-category">
+          <h4>🚀 Práctica de Código:</h4>
+          <div class="resource-list">
+            <strong>LeetCode</strong> - Algoritmos |
+            <strong>HackerRank</strong> - Challenges |
+            <strong>Codewars</strong> - Katas | <strong>GitHub</strong> -
+            Proyectos colaborativos | <strong>Frontend Mentor</strong> -
+            Proyectos frontend
+          </div>
+        </div>
+
+        <div class="resource-category">
+          <h4>💡 Tips de Inmersión en Inglés:</h4>
+          <div class="resource-list">
+            Cambia tu IDE a inglés | Sigue developers en Twitter | Lee commits
+            de GitHub en inglés | Participa en Discord/Slack de developers |
+            Escucha música en inglés mientras programas
+          </div>
+        </div>
+      </div>
+
+      <button class="reset-btn" onclick="resetDay()">🔄 Reiniciar Día</button>
+
+      <div class="motivation-quote" id="motivationQuote">
+        "El éxito es la suma de pequeños esfuerzos repetidos día tras día."
+      </div>
+    </div>
+
+    <script>
+      const habits = {};
+      const quotes = [
+        'El éxito es la suma de pequeños esfuerzos repetidos día tras día.',
+        'No busques ser perfecto, busca ser mejor que ayer.',
+        'Cada día es una nueva oportunidad para crecer.',
+        'Los hábitos son los intereses compuestos del desarrollo personal.',
+        'La disciplina es elegir entre lo que quieres ahora y lo que quieres más.',
+        'Un programador nunca deja de aprender, siempre hay algo nuevo que descubrir.',
+        'El código limpio no se escribe siguiendo reglas, se escribe practicando cada día.',
+        'Consistency beats perfection. Un pequeño paso diario es mejor que un gran salto ocasional.',
+        'Tu futuro se construye con lo que haces hoy, no con lo que planeas hacer mañana.',
+        'El inglés no es solo un idioma, es la puerta de entrada al mundo tech global.',
+      ];
+
+      function initializeHabits() {
+        const habitItems = document.querySelectorAll('.habit-item');
+        const savedHabits = JSON.parse(
+          localStorage.getItem('dailyHabits') || '{}'
+        );
+
+        habitItems.forEach((item) => {
+          const habitId = item.dataset.habit;
+          habits[habitId] = savedHabits[habitId] || false;
+
+          if (habits[habitId]) {
+            item.classList.add('completed');
+          }
+
+          item.addEventListener('click', () => toggleHabit(habitId));
+        });
+
+        updateProgress();
+        updateDate();
+        showRandomQuote();
+      }
+
+      function toggleHabit(habitId) {
+        habits[habitId] = !habits[habitId];
+        const habitItem = document.querySelector(`[data-habit="${habitId}"]`);
+
+        if (habits[habitId]) {
+          habitItem.classList.add('completed');
+        } else {
+          habitItem.classList.remove('completed');
+        }
+
+        localStorage.setItem('dailyHabits', JSON.stringify(habits));
+        updateProgress();
+      }
+
+      function resetDay() {
+        Object.keys(habits).forEach((habitId) => {
+          habits[habitId] = false;
+          const habitItem = document.querySelector(`[data-habit="${habitId}"]`);
+          habitItem.classList.remove('completed');
+        });
+
+        localStorage.removeItem('dailyHabits');
+        updateProgress();
+        showRandomQuote();
+      }
+
+      function updateProgress() {
+        const totalHabits = Object.keys(habits).length;
+        const completedHabits = Object.values(habits).filter(Boolean).length;
+        const progressPercentage = Math.round(
+          (completedHabits / totalHabits) * 100
+        );
+
+        // Actualizar el texto del progreso
+        const progressText = document.getElementById('progressText');
+        progressText.textContent = `${progressPercentage}%`;
+
+        // Actualizar el círculo de progreso
+        const progressCircle = document.getElementById('progressCircle');
+        progressCircle.style.background = `conic-gradient(
+          #667eea ${progressPercentage * 3.6}deg,
+          #e2e8f0 ${progressPercentage * 3.6}deg
+        )`;
+
+        // Añadir animación de celebración cuando se completan todos los hábitos
+        if (progressPercentage === 100) {
+          progressCircle.style.animation = 'celebrationPulse 2s infinite';
+        } else {
+          progressCircle.style.animation = 'none';
+        }
+      }
+
+      // Agregar estilos para la animación de celebración
+      const style = document.createElement('style');
+      style.textContent = `
+                  @keyframes celebrationPulse {
+                      0%, 100% { transform: translate(-50%, -50%) scale(1); }
+                      50% { transform: translate(-50%, -50%) scale(1.1); }
+                  }
+              `;
+      document.head.appendChild(style);
+
+      // Inicializar cuando la página carga
+      document.addEventListener('DOMContentLoaded', initializeHabits);
+    </script>
+  </body>
+</html>
